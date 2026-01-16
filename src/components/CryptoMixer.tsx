@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/AuthModal";
 
 interface Crypto {
   id: string;
@@ -31,10 +33,12 @@ const cryptos: Crypto[] = [
 const COMMISSION_RATE = 0.2;
 
 export function CryptoMixer() {
+  const { isAuthenticated, login } = useAuth();
   const [fromCrypto, setFromCrypto] = useState<string>("");
   const [toCrypto, setToCrypto] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const calculateReceiveAmount = () => {
     if (!amount || isNaN(Number(amount))) return "0";
@@ -60,6 +64,12 @@ export function CryptoMixer() {
       alert("Пожалуйста, заполните все поля");
       return;
     }
+
+    if (!isAuthenticated) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     alert(`Обмен запущен:\n${amount} ${fromCrypto.toUpperCase()} → ${calculateReceiveAmount()} ${toCrypto.toUpperCase()}\nКомиссия: ${calculateCommission()} ${fromCrypto.toUpperCase()}`);
   };
 
@@ -191,6 +201,12 @@ export function CryptoMixer() {
           </div>
         </CardContent>
       </Card>
+
+      <AuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        onAuth={login}
+      />
     </motion.div>
   );
 }
